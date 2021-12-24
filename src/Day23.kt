@@ -271,7 +271,7 @@ fun main() {
                     else -> throw Exception("unknown amphipod in hallway ${hallway[i]}")
                 }
 
-                if (room.last() == '.') {
+                if (room.last() == '.' && room.all { it == '.' || it == amphipod }) {
                     val (hallwayPassThroughPositions, hallwayMoves) = hallwayToRoomDoor[i]!![amphipod]!!
                     if (hallwayPassThroughPositions.all { hallway[it] == '.' }) {
                         // nothing is blocking the hallway to travel
@@ -320,22 +320,6 @@ fun main() {
         return nextPossibleStates
     }
 
-    fun nextStateToExplore(
-        minEnergyToState: MutableMap<BurrowState, Int>,
-        unexploredStates: MutableSet<BurrowState>
-    ): BurrowState {
-        var nextStateToExplore: BurrowState? = null
-        var minEnergy = Int.MAX_VALUE
-        unexploredStates.forEach { state ->
-            if (minEnergyToState[state]!! < minEnergy) {
-                nextStateToExplore = state
-                minEnergy = minEnergyToState[state]!!
-            }
-        }
-
-        return nextStateToExplore!!
-    }
-
     fun findMinEnergy(initialState: BurrowState, targetState: BurrowState): Int {
         val startTime = System.currentTimeMillis()
         println("initialState = ${initialState}")
@@ -371,9 +355,11 @@ fun main() {
                 }
 
                 println("\n\nPath from initial to target:")
+                var prevEnergy = 0
                 backwardPathToInitialState.reversed().forEach {
                     println(it)
-                    println("--@${minEnergyToState[it]}------------------")
+                    println("--@${minEnergyToState[it]} (+${minEnergyToState[it]!! - prevEnergy})------------------")
+                    prevEnergy = minEnergyToState[it]!!
                 }
 
                 println("Time taken = ${System.currentTimeMillis() - startTime}")
@@ -382,11 +368,11 @@ fun main() {
 
             unexploredStates.remove(stateToExplore, nextState.second)
 
-            if (energyToState % 500 == 0) {
-                println("nextStateToExplore = ${stateToExplore} @ $energyToState")
-                println("unexploredStates.size = ${unexploredStates.size()}")
-                println("measure = ${measure}")
-            }
+//            if (energyToState % 500 == 0) {
+//                println("nextStateToExplore = ${stateToExplore} @ $energyToState")
+//                println("unexploredStates.size = ${unexploredStates.size()}")
+//                println("measure = ${measure}")
+//            }
 
             val time3 = System.currentTimeMillis()
             measure[2] = measure[2]!! + time3 - time2
@@ -468,9 +454,8 @@ fun main() {
         return findMinEnergy(initialState, targetState)
     }
 
-    println("Part T: " + part2(readInput("Test")))
     val input = readInput("Day23")
 
-//    println("Part 1: " + part1(input))
-//    println("Part 2: " + part2(input))
+    println("Part 1: " + part1(input))
+    println("Part 2: " + part2(input))
 }
